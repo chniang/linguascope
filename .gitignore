@@ -17,4 +17,5 @@ screenshots/check-*.png
 node_modules/
 package.json
 package-lock.json
-scripts/
+scripts/*
+!scripts/push-hf.sh
