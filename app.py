@@ -168,9 +168,100 @@ THEME = gr.themes.Base(
 
 _DARK_JS = "() => { document.documentElement.classList.add('dark'); }"
 
-with gr.Blocks(title="LinguaScope", js=_DARK_JS) as demo:
+CSS = """
+/* ── Header ───────────────────────────────────────────────────────── */
+#ls-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #1e1b4b 100%);
+    border: 1px solid #3730a3;
+    border-radius: 16px;
+    padding: 2rem 2rem 1.75rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+    margin-bottom: 1.75rem;
+}
 
-    gr.Markdown("# LinguaScope\nAnalyse de sentiment et de discours — FR & EN")
+#ls-header .ls-logo { font-size: 3rem; line-height: 1; margin-bottom: 0.4rem; }
+
+#ls-header h1 {
+    font-size: 2.4rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #c7d2fe, #a5b4fc, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0.2rem 0 !important;
+    letter-spacing: -0.03em;
+}
+
+#ls-header p.ls-subtitle {
+    color: #94a3b8 !important;
+    font-size: 0.95rem !important;
+    margin: 0.5rem 0 0 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── Result cards ─────────────────────────────────────────────────── */
+.ls-card {
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+
+.ls-card:hover {
+    box-shadow: 0 6px 30px rgba(99, 102, 241, 0.18) !important;
+    border-color: #4338ca !important;
+}
+
+.ls-summary {
+    border-color: #4338ca !important;
+    box-shadow: 0 4px 28px rgba(99, 102, 241, 0.28) !important;
+    border-radius: 12px !important;
+    margin-bottom: 1rem !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+.ls-btn-primary > button {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.ls-btn-primary > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 22px rgba(99, 102, 241, 0.6) !important;
+}
+
+.ls-btn-primary > button:active { transform: translateY(0) !important; }
+
+.ls-btn-secondary > button {
+    border-radius: 8px !important;
+    transition: transform 0.15s ease, border-color 0.15s ease !important;
+}
+
+.ls-btn-secondary > button:hover {
+    transform: translateY(-1px) !important;
+    border-color: #6366f1 !important;
+    color: #a5b4fc !important;
+}
+
+/* ── Container & spacing ──────────────────────────────────────────── */
+.gradio-container { max-width: 1300px !important; padding: 1.5rem 2rem !important; }
+
+.ls-results-col { gap: 0.85rem !important; }
+"""
+
+_HEADER_MD = """<div class="ls-logo">🔭</div>
+
+# LinguaScope
+
+<p class="ls-subtitle">Analyse de sentiment et de discours — FR & EN</p>"""
+
+with gr.Blocks(title="LinguaScope", js=_DARK_JS, css=CSS) as demo:
+
+    gr.Markdown(_HEADER_MD, elem_id="ls-header")
 
     with gr.Row():
         with gr.Column(scale=2):
@@ -185,8 +276,10 @@ with gr.Blocks(title="LinguaScope", js=_DARK_JS) as demo:
                 label="Langue",
             )
             with gr.Row():
-                submit_btn = gr.Button("Analyser", variant="primary")
-                clear_btn  = gr.Button("Effacer")
+                submit_btn = gr.Button("Analyser", variant="primary",
+                                       elem_classes=["ls-btn-primary"])
+                clear_btn  = gr.Button("Effacer",
+                                       elem_classes=["ls-btn-secondary"])
 
             gr.Examples(
                 examples=[[EXAMPLE_FR, "Français"], [EXAMPLE_EN, "Anglais"]],
@@ -194,14 +287,14 @@ with gr.Blocks(title="LinguaScope", js=_DARK_JS) as demo:
                 label="Exemples",
             )
 
-        with gr.Column(scale=3):
-            out_summary   = gr.Markdown()
+        with gr.Column(scale=3, elem_classes=["ls-results-col"]):
+            out_summary   = gr.Markdown(elem_classes=["ls-summary"])
             with gr.Row():
-                out_sentiment = gr.Markdown()
-                out_speech    = gr.Markdown()
+                out_sentiment = gr.Markdown(elem_classes=["ls-card"])
+                out_speech    = gr.Markdown(elem_classes=["ls-card"])
             with gr.Row():
-                out_structure = gr.Markdown()
-                out_clarity   = gr.Markdown()
+                out_structure = gr.Markdown(elem_classes=["ls-card"])
+                out_clarity   = gr.Markdown(elem_classes=["ls-card"])
 
     outputs = [out_summary, out_sentiment, out_speech, out_structure, out_clarity]
 
