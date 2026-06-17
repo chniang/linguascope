@@ -31,6 +31,18 @@ LinguaScope est une application NLP légère qui évalue simultanément le **sen
 
 ---
 
+## Aperçu
+
+| Page d'accueil | Résultats d'analyse (exemple FR) |
+|:-:|:-:|
+| ![Accueil](screenshots/01-accueil.png) | ![Résultats](screenshots/02-resultats-fr.png) |
+
+> Accordion "Comment ça marche" — documentation des 4 modules intégrée dans l'interface
+>
+> ![Comment ça marche](screenshots/03-comment-ca-marche.png)
+
+---
+
 ## Stack technique
 
 - **[Gradio](https://www.gradio.app/)** — interface web interactive

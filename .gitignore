@@ -12,3 +12,8 @@ build/
 *.err
 inspect_*.py
 screenshot_*.png
+screenshots/debug-*.png
+node_modules/
+package.json
+package-lock.json
+scripts/
