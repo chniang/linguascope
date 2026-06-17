@@ -90,7 +90,6 @@ def _render_clarity(lines: list[str], spch: dict) -> str:
 
 
 def _polarity_bar(polarity: float) -> str:
-    """Barre textuelle [-1 … +1] avec curseur."""
     pos = int((polarity + 1) / 2 * 20)
     pos = max(0, min(20, pos))
     bar = "─" * pos + "●" + "─" * (20 - pos)
@@ -98,7 +97,6 @@ def _polarity_bar(polarity: float) -> str:
 
 
 def _score_bar(score: int) -> str:
-    """Barre de progression 0-100."""
     filled = int(score / 100 * 20)
     bar = "█" * filled + "░" * (20 - filled)
     return f"`{bar}` **{score}/100**"
@@ -122,7 +120,55 @@ EXAMPLE_EN = (
     "In conclusion, we must act now to protect future generations."
 )
 
-with gr.Blocks(title="LinguaScope") as demo:
+THEME = gr.themes.Base(
+    primary_hue=gr.themes.colors.indigo,
+    secondary_hue=gr.themes.colors.purple,
+    neutral_hue=gr.themes.colors.slate,
+    font=[gr.themes.GoogleFont("Inter"), "system-ui", "sans-serif"],
+).set(
+    body_background_fill="#0f0f1a",
+    body_background_fill_dark="#0f0f1a",
+    body_text_color="#e2e8f0",
+    body_text_color_dark="#e2e8f0",
+    body_text_color_subdued="#94a3b8",
+    body_text_color_subdued_dark="#94a3b8",
+    block_background_fill="#1e1e2e",
+    block_background_fill_dark="#1e1e2e",
+    block_border_color="#2d2d44",
+    block_border_color_dark="#2d2d44",
+    block_label_text_color="#a5b4fc",
+    block_label_text_color_dark="#a5b4fc",
+    block_title_text_color="#c7d2fe",
+    block_title_text_color_dark="#c7d2fe",
+    button_primary_background_fill="#6366f1",
+    button_primary_background_fill_dark="#6366f1",
+    button_primary_background_fill_hover="#4f46e5",
+    button_primary_background_fill_hover_dark="#4f46e5",
+    button_primary_text_color="#ffffff",
+    button_primary_text_color_dark="#ffffff",
+    button_secondary_background_fill="#1e1e2e",
+    button_secondary_background_fill_dark="#1e1e2e",
+    button_secondary_background_fill_hover="#2d2d44",
+    button_secondary_background_fill_hover_dark="#2d2d44",
+    button_secondary_border_color="#3d3d5c",
+    button_secondary_border_color_dark="#3d3d5c",
+    button_secondary_text_color="#a5b4fc",
+    button_secondary_text_color_dark="#a5b4fc",
+    input_background_fill="#13131f",
+    input_background_fill_dark="#13131f",
+    input_border_color="#2d2d44",
+    input_border_color_dark="#2d2d44",
+    input_border_color_focus="#6366f1",
+    input_border_color_focus_dark="#6366f1",
+    input_placeholder_color="#475569",
+    input_placeholder_color_dark="#475569",
+    slider_color="#6366f1",
+    slider_color_dark="#6366f1",
+)
+
+_DARK_JS = "() => { document.documentElement.classList.add('dark'); }"
+
+with gr.Blocks(title="LinguaScope", js=_DARK_JS) as demo:
 
     gr.Markdown("# LinguaScope\nAnalyse de sentiment et de discours — FR & EN")
 
@@ -168,4 +214,4 @@ with gr.Blocks(title="LinguaScope") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(theme=gr.themes.Soft())
+    demo.launch(theme=THEME)
