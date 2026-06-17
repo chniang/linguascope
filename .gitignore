@@ -13,6 +13,7 @@ build/
 inspect_*.py
 screenshot_*.png
 screenshots/debug-*.png
+screenshots/check-*.png
 node_modules/
 package.json
 package-lock.json
