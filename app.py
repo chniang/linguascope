@@ -12,14 +12,15 @@ from src import feedback as feedback_mod
 LANG_MAP = {"Détection auto": None, "Français": "fr", "Anglais": "en"}
 
 
-def run_analysis(text: str, lang_choice: str) -> tuple[str, str, str, str, str]:
+def run_analysis(text: str, lang_choice: str) -> tuple:
     """
-    Orchestre les trois modules et retourne 5 chaînes Markdown
-    pour les 5 composants de sortie Gradio.
+    Orchestre les trois modules et retourne 7 valeurs pour les composants Gradio :
+    summary_md, polarity_float, sentiment_md, speech_md,
+    structure_md, clarity_md, clarity_score_int
     """
     if not text or not text.strip():
         empty = "_Entrez un texte pour lancer l'analyse._"
-        return empty, empty, empty, empty, empty
+        return empty, 0.0, empty, empty, empty, empty, 0
 
     lang = LANG_MAP.get(lang_choice)
 
@@ -29,10 +30,12 @@ def run_analysis(text: str, lang_choice: str) -> tuple[str, str, str, str, str]:
 
     return (
         _render_summary(fb["summary"], sent),
+        sent["polarity"],
         _render_sentiment(fb["sentiment"], sent),
         _render_speech(fb, spch),
         _render_structure(fb["structure"], spch),
         _render_clarity(fb["clarity"], spch),
+        spch["clarity"]["clarity_score"],
     )
 
 
@@ -43,12 +46,12 @@ def run_analysis(text: str, lang_choice: str) -> tuple[str, str, str, str, str]:
 def _render_summary(summary: str, sent: dict) -> str:
     lang_label = {"fr": "Français", "en": "Anglais"}.get(sent["language"], "Inconnu")
     polarity = sent["polarity"]
-    bar = _polarity_bar(polarity)
+    pol_color = "#22c55e" if polarity > 0.1 else "#ef4444" if polarity < -0.1 else "#94a3b8"
     return (
         f"### Synthèse\n"
         f"{summary}\n\n"
-        f"**Langue détectée :** {lang_label}\n\n"
-        f"**Polarité** `{polarity:+.4f}`\n\n{bar}"
+        f"**Langue détectée :** {lang_label} &nbsp;·&nbsp; "
+        f'**Polarité** <span style="color:{pol_color};font-weight:700">{polarity:+.4f}</span>'
     )
 
 
@@ -82,24 +85,8 @@ def _render_structure(lines: list[str], spch: dict) -> str:
 
 
 def _render_clarity(lines: list[str], spch: dict) -> str:
-    c = spch["clarity"]
-    score = c["clarity_score"]
-    bar = _score_bar(score)
     body = "\n\n".join(lines)
-    return f"### Clarté\n{bar}\n\n{body}"
-
-
-def _polarity_bar(polarity: float) -> str:
-    pos = int((polarity + 1) / 2 * 20)
-    pos = max(0, min(20, pos))
-    bar = "─" * pos + "●" + "─" * (20 - pos)
-    return f"`−1 {bar} +1`"
-
-
-def _score_bar(score: int) -> str:
-    filled = int(score / 100 * 20)
-    bar = "█" * filled + "░" * (20 - filled)
-    return f"`{bar}` **{score}/100**"
+    return f"### Clarté\n{body}"
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +153,27 @@ THEME = gr.themes.Base(
     slider_color_dark="#6366f1",
 )
 
-_DARK_JS = "() => { document.documentElement.classList.add('dark'); }"
+# Force dark mode + polling accent-color dynamique sur les sliders
+_DARK_JS = """() => {
+    document.documentElement.classList.add('dark');
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function pctToColor(pct) {
+        const r = pct < 0.5 ? 239 : Math.round(lerp(239, 34,  (pct - 0.5) * 2));
+        const g = pct < 0.5 ? Math.round(lerp(68, 197, pct * 2)) : 197;
+        const b = 68;
+        return `rgb(${r},${g},${b})`;
+    }
+
+    setInterval(() => {
+        const pol = document.querySelector('.ls-slider-polarity input[type="range"]');
+        if (pol) pol.style.accentColor = pctToColor((parseFloat(pol.value) + 1) / 2);
+
+        const clr = document.querySelector('.ls-slider-clarity input[type="range"]');
+        if (clr) clr.style.accentColor = pctToColor(parseFloat(clr.value) / 100);
+    }, 150);
+}"""
 
 CSS = """
 /* ── Header ───────────────────────────────────────────────────────── */
@@ -247,6 +254,31 @@ CSS = """
     color: #a5b4fc !important;
 }
 
+/* ── Sliders (gradient track + accent-color via JS) ──────────────── */
+.ls-slider-polarity input[type="range"],
+.ls-slider-clarity  input[type="range"] {
+    cursor: default !important;
+    height: 6px;
+}
+
+.ls-slider-polarity input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, #ef4444 0%, #64748b 50%, #22c55e 100%);
+    height: 6px; border-radius: 4px;
+}
+.ls-slider-polarity input[type="range"]::-moz-range-track {
+    background: linear-gradient(to right, #ef4444 0%, #64748b 50%, #22c55e 100%);
+    height: 6px; border-radius: 4px;
+}
+
+.ls-slider-clarity input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, #ef4444 0%, #f59e0b 45%, #22c55e 100%);
+    height: 6px; border-radius: 4px;
+}
+.ls-slider-clarity input[type="range"]::-moz-range-track {
+    background: linear-gradient(to right, #ef4444 0%, #f59e0b 45%, #22c55e 100%);
+    height: 6px; border-radius: 4px;
+}
+
 /* ── Container & spacing ──────────────────────────────────────────── */
 .gradio-container { max-width: 1300px !important; padding: 1.5rem 2rem !important; }
 
@@ -288,20 +320,31 @@ with gr.Blocks(title="LinguaScope", js=_DARK_JS, css=CSS) as demo:
             )
 
         with gr.Column(scale=3, elem_classes=["ls-results-col"]):
-            out_summary   = gr.Markdown(elem_classes=["ls-summary"])
+            out_summary     = gr.Markdown(elem_classes=["ls-summary"])
+            slider_polarity = gr.Slider(
+                minimum=-1, maximum=1, step=0.0001, value=0,
+                interactive=False, label="Polarité  ( −1 négatif · 0 neutre · +1 positif )",
+                elem_classes=["ls-slider-polarity"],
+            )
             with gr.Row():
                 out_sentiment = gr.Markdown(elem_classes=["ls-card"])
                 out_speech    = gr.Markdown(elem_classes=["ls-card"])
             with gr.Row():
                 out_structure = gr.Markdown(elem_classes=["ls-card"])
                 out_clarity   = gr.Markdown(elem_classes=["ls-card"])
+            slider_clarity = gr.Slider(
+                minimum=0, maximum=100, step=1, value=0,
+                interactive=False, label="Score de clarté  ( 0 insuffisant · 100 excellent )",
+                elem_classes=["ls-slider-clarity"],
+            )
 
-    outputs = [out_summary, out_sentiment, out_speech, out_structure, out_clarity]
+    outputs = [out_summary, slider_polarity, out_sentiment, out_speech,
+               out_structure, out_clarity, slider_clarity]
 
     submit_btn.click(fn=run_analysis, inputs=[text_input, lang_radio], outputs=outputs)
     text_input.submit(fn=run_analysis, inputs=[text_input, lang_radio], outputs=outputs)
     clear_btn.click(
-        fn=lambda: ("", "Détection auto") + ("",) * 5,
+        fn=lambda: ("", "Détection auto", "", 0.0, "", "", "", "", 0),
         outputs=[text_input, lang_radio] + outputs,
     )
 
