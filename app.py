@@ -318,7 +318,14 @@ CSS = """
 }
 
 /* ── Container & spacing ──────────────────────────────────────────── */
-.gradio-container { max-width: 1100px !important; margin: 0 auto !important; padding: 1.5rem 2rem !important; }
+.gradio-container { width: 100% !important; max-width: 100% !important; padding: 1.5rem 2.5rem !important; box-sizing: border-box !important; }
+
+/* Gradio inner wrapper — also caps width, must be overridden */
+.main.fillable { max-width: 100% !important; }
+
+@media (max-width: 640px) {
+    .gradio-container { padding: 1rem 1rem !important; }
+}
 
 .ls-results-col { gap: 0.85rem !important; }
 """
