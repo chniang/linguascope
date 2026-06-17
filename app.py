@@ -279,6 +279,83 @@ CSS = """
     height: 6px; border-radius: 4px;
 }
 
+/* ── How it works accordion ──────────────────────────────────────── */
+.ls-how-it-works {
+    margin-top: 2rem !important;
+    border: 1px solid #2d2d44 !important;
+    border-radius: 12px !important;
+    background-color: #1e1e2e !important;
+    overflow: hidden !important;
+}
+
+.ls-how-it-works > .label-wrap {
+    padding: 0.85rem 1.25rem !important;
+    background-color: #1e1e2e !important;
+    cursor: pointer !important;
+}
+
+.ls-how-it-works > .label-wrap span {
+    color: #c7d2fe !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.02em !important;
+}
+
+.ls-how-it-works .prose {
+    padding: 0 1.5rem 1.5rem !important;
+}
+
+.ls-how-it-works .prose h3 {
+    color: #a5b4fc !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    margin: 1.25rem 0 0.4rem !important;
+    letter-spacing: 0.01em !important;
+}
+
+.ls-how-it-works .prose p,
+.ls-how-it-works .prose li {
+    color: #cbd5e1 !important;
+    font-size: 0.875rem !important;
+    line-height: 1.65 !important;
+}
+
+.ls-how-it-works .prose table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 0.75rem 0 !important;
+    font-size: 0.85rem !important;
+}
+
+.ls-how-it-works .prose th {
+    background-color: #13131f !important;
+    color: #a5b4fc !important;
+    padding: 0.4rem 0.75rem !important;
+    text-align: left !important;
+    border: 1px solid #2d2d44 !important;
+}
+
+.ls-how-it-works .prose td {
+    color: #cbd5e1 !important;
+    background-color: #13131f !important;
+    padding: 0.35rem 0.75rem !important;
+    border: 1px solid #1e1e2e !important;
+}
+
+.ls-how-it-works .prose hr {
+    border-color: #2d2d44 !important;
+    margin: 1rem 0 !important;
+}
+
+.ls-how-it-works .prose code {
+    background-color: #0f0f1a !important;
+    color: #c7d2fe !important;
+    padding: 0.15rem 0.4rem !important;
+    border-radius: 4px !important;
+    font-size: 0.82rem !important;
+    border: 1px solid #2d2d44 !important;
+}
+
 /* ── Examples table ───────────────────────────────────────────────── */
 .table-wrap {
     background-color: #0f0f1a !important;
@@ -328,6 +405,53 @@ CSS = """
 }
 
 .ls-results-col { gap: 0.85rem !important; }
+"""
+
+_HOW_IT_WORKS_MD = """
+### Analyse de sentiment
+
+Deux moteurs selon la langue détectée :
+- **Français** — [textblob-fr](https://github.com/sloria/textblob-fr) avec `PatternTagger` et `PatternAnalyzer` (port du Pattern NLP de CLiPS).
+- **Anglais** — [TextBlob](https://textblob.readthedocs.io/) natif avec son analyseur de polarité et de subjectivité.
+
+Le score de **polarité** va de **−1** (très négatif) à **+1** (très positif). La classification applique un seuil à ±0.1 : en dessous de −0.1 → négatif, au-dessus de +0.1 → positif, entre les deux → neutre. La **subjectivité** (0 = factuel, 1 = très subjectif) n'est disponible qu'en anglais.
+
+---
+
+### Détection des mots parasites
+
+Chaque langue dispose d'un lexique de référence :
+- **Français (~20 entrées)** : *euh, bah, ben, hein, voilà, quoi, enfin, du coup, en fait, genre, machin, truc, chose, nan, ouais, bref, bon, donc, genre, wesh*
+- **Anglais (~18 entrées)** : *um, uh, like, you know, basically, literally, honestly, right, so, anyway, sort of, kind of, I mean, well, okay, actually, whatever, seriously*
+
+La détection s'effectue par tokenisation avec correspondance de mots entiers (regex `\bfiller\b`) pour éviter les faux positifs. Un **ratio fillers / mots totaux > 5 %** déclenche une alerte.
+
+---
+
+### Structure du discours
+
+Trois marqueurs sont recherchés par mots-clés bilingues :
+
+| Partie | Exemples de marqueurs FR | Exemples de marqueurs EN |
+|---|---|---|
+| **Introduction** | *pour commencer, premièrement, aujourd'hui* | *first, to begin, today* |
+| **Développement** | *(minimum 3 phrases dans le corps)* | *(minimum 3 sentences in the body)* |
+| **Conclusion** | *en conclusion, finalement, en résumé* | *in conclusion, finally, overall* |
+
+Chaque partie présente rapporte 1 point. Le **score de structure** est sur **3**.
+
+---
+
+### Score de clarté
+
+Le score démarre à 100 et subit deux pénalités :
+
+| Critère | Seuil | Pénalité max |
+|---|---|---|
+| **Longueur des phrases** | > 25 mots/phrase | −40 pts |
+| **Diversité lexicale** (Type-Token Ratio) | TTR < 0.5 | −20 pts |
+
+Le **TTR** est le rapport *mots uniques / mots totaux*. Un texte qui répète beaucoup les mêmes mots aura un TTR bas. Le score final est borné entre 0 et 100.
 """
 
 _HEADER_MD = """<div class="ls-logo">🔭</div>
@@ -392,6 +516,9 @@ with gr.Blocks(title="LinguaScope", js=_DARK_JS, css=CSS, fill_width=False) as d
         fn=lambda: ("", "Détection auto", "", 0.0, "", "", "", "", 0),
         outputs=[text_input, lang_radio] + outputs,
     )
+
+    with gr.Accordion("Comment ça marche", open=False, elem_classes=["ls-how-it-works"]):
+        gr.Markdown(_HOW_IT_WORKS_MD)
 
 
 if __name__ == "__main__":
