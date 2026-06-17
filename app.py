@@ -279,8 +279,46 @@ CSS = """
     height: 6px; border-radius: 4px;
 }
 
+/* ── Examples table ───────────────────────────────────────────────── */
+.table-wrap {
+    background-color: #0f0f1a !important;
+    border: 1px solid #2d2d44 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.table-wrap table {
+    background-color: #0f0f1a !important;
+}
+
+.table-wrap th {
+    background-color: #1e1e2e !important;
+    color: #a5b4fc !important;
+    border-bottom: 1px solid #2d2d44 !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+}
+
+.table-wrap td {
+    background-color: #13131f !important;
+    color: #e2e8f0 !important;
+    border-color: #1e1e2e !important;
+    padding: 0.45rem 0.75rem !important;
+}
+
+.table-wrap td span,
+.table-wrap td .table {
+    color: #e2e8f0 !important;
+    background: transparent !important;
+}
+
+.table-wrap tbody tr:hover td {
+    background-color: #1e1e2e !important;
+    cursor: pointer !important;
+}
+
 /* ── Container & spacing ──────────────────────────────────────────── */
-.gradio-container { max-width: 1300px !important; padding: 1.5rem 2rem !important; }
+.gradio-container { max-width: 1100px !important; margin: 0 auto !important; padding: 1.5rem 2rem !important; }
 
 .ls-results-col { gap: 0.85rem !important; }
 """
@@ -291,7 +329,7 @@ _HEADER_MD = """<div class="ls-logo">🔭</div>
 
 <p class="ls-subtitle">Analyse de sentiment et de discours — FR & EN</p>"""
 
-with gr.Blocks(title="LinguaScope", js=_DARK_JS, css=CSS) as demo:
+with gr.Blocks(title="LinguaScope", js=_DARK_JS, css=CSS, fill_width=False) as demo:
 
     gr.Markdown(_HEADER_MD, elem_id="ls-header")
 
