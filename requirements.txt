@@ -1,0 +1,4 @@
+gradio
+textblob
+textblob-fr
+langdetect
