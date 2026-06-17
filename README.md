@@ -1,3 +1,16 @@
+---
+title: Linguascope
+emoji: 🔭
+colorFrom: indigo
+colorTo: purple
+sdk: gradio
+sdk_version: 6.18.0
+python_version: '3.12'
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # LinguaScope
 
 > Analyse de sentiment et de discours en français et en anglais — propulsé par Gradio.
@@ -61,7 +74,7 @@ Primitives partagées : `tokenize_words`, `tokenize_sentences`, `lexical_diversi
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/cheikhaidev-ui/linguascope.git
+git clone https://github.com/chniang/linguascope.git
 cd linguascope
 
 # 2. Installer les dépendances
@@ -90,7 +103,7 @@ Ce fichier sert uniquement à tester les modules en local — il n'est **pas** e
 
 ## Démo
 
-> **Hugging Face Space :** _à venir_ — lien à ajouter après déploiement.
+> **Hugging Face Space :** https://huggingface.co/spaces/TIJAANI/linguascope
 
 ---
 
